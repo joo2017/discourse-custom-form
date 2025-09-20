@@ -2,7 +2,6 @@
 
 class CustomFormEntriesController < ApplicationController
   before_action :ensure_logged_in
-  before_action :find_post, except: [:index]
   before_action :find_entry, only: [:show, :destroy]
 
   def index
@@ -11,25 +10,35 @@ class CustomFormEntriesController < ApplicationController
                              .limit(50)
     
     render json: {
-      entries: entries.map { |entry| CustomFormEntrySerializer.new(entry, root: false) }
+      entries: entries.map { |entry| serialize_entry(entry) }
     }
   end
 
   def create
-    entry = @post.custom_form_entries.build(entry_params.merge(user: current_user))
+    # 从参数中提取 post_id
+    post_id = params[:post_id]
+    post = nil
+    
+    if post_id.present?
+      post = Post.find_by(id: post_id)
+    end
+    
+    entry_params_hash = entry_params
+    entry = CustomFormEntry.new(entry_params_hash.merge(user: current_user))
+    entry.post = post if post
     
     if entry.save
-      # 在帖子中插入表单内容
-      update_post_content(entry)
-      
-      render json: CustomFormEntrySerializer.new(entry, root: false)
+      render json: serialize_entry(entry)
     else
-      render json: { errors: entry.errors.full_messages }, status: 422
+      render json: { 
+        errors: entry.errors.full_messages,
+        success: false 
+      }, status: 422
     end
   end
 
   def show
-    render json: CustomFormEntrySerializer.new(@entry, root: false)
+    render json: serialize_entry(@entry)
   end
 
   def destroy
@@ -40,10 +49,6 @@ class CustomFormEntriesController < ApplicationController
   end
 
   private
-
-  def find_post
-    @post = Post.find(params[:post_id]) if params[:post_id]
-  end
 
   def find_entry
     @entry = CustomFormEntry.find(params[:id])
@@ -59,25 +64,19 @@ class CustomFormEntriesController < ApplicationController
     false
   end
 
-  def update_post_content(entry)
-    content = "\n\n---\n**#{entry.title}**\n"
-    content += "**日期:** #{entry.event_date.strftime('%Y-%m-%d')}\n"
-    
-    if entry.image_upload
-      content += "![#{entry.title}](#{entry.image_upload.url})\n"
-    end
-    
-    if entry.description.present?
-      content += "\n#{entry.description}\n"
-    end
-    
-    content += "---\n"
-    
-    revisor = PostRevisor.new(@post)
-    revisor.revise!(
-      current_user,
-      raw: @post.raw + content,
-      edit_reason: I18n.t('custom_form.edit_reason')
-    )
+  def serialize_entry(entry)
+    {
+      id: entry.id,
+      title: entry.title,
+      event_date: entry.event_date,
+      description: entry.description,
+      image_url: entry.image_upload&.url,
+      created_at: entry.created_at,
+      user: {
+        id: entry.user.id,
+        username: entry.user.username,
+        avatar_template: entry.user.avatar_template
+      }
+    }
   end
 end
