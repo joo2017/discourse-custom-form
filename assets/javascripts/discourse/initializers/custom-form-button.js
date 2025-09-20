@@ -16,10 +16,10 @@ export default {
             group: "extras",
             icon: "plus",
             title: "custom_form.button_title",
-            perform: (editor) => {
+            perform: (toolbarEvent) => {
               modal.show(CustomFormModal, {
                 model: {
-                  editor: editor
+                  toolbarEvent: toolbarEvent
                 }
               });
             }
