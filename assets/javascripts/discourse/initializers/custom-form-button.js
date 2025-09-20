@@ -9,7 +9,7 @@ function initializeCustomFormButton(api) {
       icon: "plus",
       title: "custom_form.button_title",
       perform: (editor) => {
-        const modal = editor.container.lookup("service:modal");
+        const modal = api.container.lookup("service:modal");
         modal.show(CustomFormModal, {
           model: {
             editor: editor
