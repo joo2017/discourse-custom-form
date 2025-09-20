@@ -1,0 +1,16 @@
+zh_CN:
+  js:
+    custom_form:
+      button_title: "自定义表单"
+      modal_title: "填写自定义表单"
+      form:
+        title_label: "标题"
+        title_placeholder: "请输入标题"
+        image_label: "上传图片"
+        date_label: "选择日期"
+        submit: "提交"
+        cancel: "取消"
+        title_required: "标题不能为空"
+        date_required: "请选择日期"
+      success_message: "表单提交成功！"
+      error_message: "提交失败，请重试"
