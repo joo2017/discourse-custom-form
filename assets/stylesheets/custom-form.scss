@@ -1,0 +1,123 @@
+.custom-form-modal {
+  .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  .custom-form {
+    .form-group {
+      margin-bottom: 1.5rem;
+
+      .form-label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        color: var(--primary);
+
+        .required {
+          color: var(--danger);
+          margin-left: 2px;
+        }
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--primary-low-mid);
+        border-radius: 4px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+
+        &:focus {
+          outline: none;
+          border-color: var(--tertiary);
+          box-shadow: 0 0 0 2px rgba(var(--tertiary-rgb), 0.25);
+        }
+
+        &.error {
+          border-color: var(--danger);
+          
+          &:focus {
+            box-shadow: 0 0 0 2px rgba(var(--danger-rgb), 0.25);
+          }
+        }
+      }
+
+      .error-message {
+        color: var(--danger);
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+      }
+    }
+
+    .image-uploader {
+      border: 2px dashed var(--primary-low-mid);
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      transition: border-color 0.3s ease;
+
+      &:hover {
+        border-color: var(--tertiary);
+      }
+    }
+
+    .uploaded-image-preview {
+      margin-top: 1rem;
+      text-align: center;
+
+      .preview-image {
+        max-width: 200px;
+        max-height: 150px;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+    }
+  }
+
+  .modal-footer {
+    .custom-form-submit {
+      min-width: 80px;
+      position: relative;
+
+      .loading-icon {
+        animation: spin 1s linear infinite;
+        margin-right: 0.5rem;
+      }
+
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .custom-form-modal {
+    .modal-body {
+      max-height: 60vh;
+    }
+
+    .custom-form {
+      .form-group {
+        margin-bottom: 1rem;
+      }
+
+      .form-control {
+        padding: 0.625rem;
+        font-size: 0.875rem;
+      }
+    }
+  }
+}
