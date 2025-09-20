@@ -11,26 +11,19 @@ enabled_site_setting :custom_form_enabled
 register_asset "stylesheets/custom-form.scss"
 
 after_initialize do
-  # 加载模型和控制器
-  require_relative "app/models/custom_form_entry"
-  require_relative "app/controllers/custom_form_entries_controller"
-  require_relative "app/serializers/custom_form_entry_serializer"
+  # 加载控制器文件
+  load File.expand_path('../app/controllers/custom_form_entries_controller.rb', __FILE__)
   
-  # 注册路由
+  # 注册路由 - 注意：不要使用 namespace，直接使用 resources
   Discourse::Application.routes.append do
-    namespace :custom_form do
-      resources :entries, only: [:create, :index, :show, :destroy]
-    end
+    get '/custom_form/entries' => 'custom_form_entries#index'
+    post '/custom_form/entries' => 'custom_form_entries#create'
+    get '/custom_form/entries/:id' => 'custom_form_entries#show'
+    delete '/custom_form/entries/:id' => 'custom_form_entries#destroy'
   end
   
-  # 添加到序列化器
-  add_to_serializer(:post, :custom_form_entries) do
-    object.custom_form_entries.map do |entry|
-      CustomFormEntrySerializer.new(entry, root: false)
-    end
-  end
-  
-  add_to_serializer(:post, :include_custom_form_entries?) do
-    object.custom_form_entries.any?
+  # 扩展 Post 模型
+  Post.class_eval do
+    has_many :custom_form_entries, dependent: :destroy
   end
 end
