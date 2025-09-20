@@ -19,6 +19,7 @@ export default class CustomFormModal extends Component {
   @service siteSettings;
   @tracked title = "";
   @tracked selectedDate = "";
+  @tracked description = "";
   @tracked uploadedImage = null;
   @tracked isSubmitting = false;
   @tracked errors = {};
@@ -34,9 +35,14 @@ export default class CustomFormModal extends Component {
   @action
   updateDate(event) {
     this.selectedDate = event.target.value;
-    if (this.errors.date && this.selectedDate) {
-      delete this.errors.date;
+    if (this.errors.event_date && this.selectedDate) {
+      delete this.errors.event_date;
     }
+  }
+
+  @action
+  updateDescription(event) {
+    this.description = event.target.value;
   }
 
   @action
@@ -55,7 +61,7 @@ export default class CustomFormModal extends Component {
     }
 
     if (!this.selectedDate) {
-      this.errors.date = I18n.t("custom_form.form.date_required");
+      this.errors.event_date = I18n.t("custom_form.form.date_required");
       isValid = false;
     }
 
@@ -72,30 +78,32 @@ export default class CustomFormModal extends Component {
 
     try {
       const formData = {
-        title: this.title,
-        date: this.selectedDate,
-        image_upload_id: this.uploadedImage?.id
+        custom_form_entry: {
+          title: this.title,
+          event_date: this.selectedDate,
+          description: this.description,
+          image_upload_id: this.uploadedImage?.id
+        },
+        post_id: this.args.model.post?.id
       };
 
-      // 模拟提交成功
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // 在编辑器中插入表单内容
-      const toolbarEvent = this.args.model.toolbarEvent;
-      let content = `## ${this.title}\n\n`;
-      content += `**日期:** ${this.selectedDate}\n\n`;
-      
-      if (this.uploadedImage) {
-        content += `![${this.title}](${this.uploadedImage.url})\n\n`;
-      }
-
-      toolbarEvent.addText(content);
+      const response = await ajax("/custom_form/entries", {
+        type: "POST",
+        data: formData
+      });
 
       this.dialog.alert(I18n.t("custom_form.success_message"));
       this.args.closeModal();
 
+      // 触发事件通知其他组件更新
+      this.args.model.onEntryCreated?.(response);
+
     } catch (error) {
-      popupAjaxError(error);
+      if (error.jqXHR?.responseJSON?.errors) {
+        this.errors = { general: error.jqXHR.responseJSON.errors.join(", ") };
+      } else {
+        popupAjaxError(error);
+      }
     } finally {
       this.isSubmitting = false;
     }
@@ -114,6 +122,10 @@ export default class CustomFormModal extends Component {
     >
       <:body>
         <form class="custom-form">
+          {{#if this.errors.general}}
+            <div class="alert alert-error">{{this.errors.general}}</div>
+          {{/if}}
+
           <div class="form-group">
             <label for="custom-form-title" class="form-label">
               {{i18n "custom_form.form.title_label"}}
@@ -130,6 +142,36 @@ export default class CustomFormModal extends Component {
             {{#if this.errors.title}}
               <div class="error-message">{{this.errors.title}}</div>
             {{/if}}
+          </div>
+
+          <div class="form-group">
+            <label for="custom-form-date" class="form-label">
+              {{i18n "custom_form.form.date_label"}}
+              <span class="required">*</span>
+            </label>
+            <Input
+              @type="date"
+              @value={{this.selectedDate}}
+              {{on "input" this.updateDate}}
+              id="custom-form-date"
+              class="form-control {{if this.errors.event_date 'error'}}"
+            />
+            {{#if this.errors.event_date}}
+              <div class="error-message">{{this.errors.event_date}}</div>
+            {{/if}}
+          </div>
+
+          <div class="form-group">
+            <label for="custom-form-description" class="form-label">
+              {{i18n "custom_form.form.description_label"}}
+            </label>
+            <textarea
+              {{on "input" this.updateDescription}}
+              id="custom-form-description"
+              class="form-control"
+              rows="3"
+              placeholder={{i18n "custom_form.form.description_placeholder"}}
+            >{{this.description}}</textarea>
           </div>
 
           {{#if this.siteSettings.custom_form_allow_image_upload}}
@@ -151,23 +193,6 @@ export default class CustomFormModal extends Component {
               {{/if}}
             </div>
           {{/if}}
-
-          <div class="form-group">
-            <label for="custom-form-date" class="form-label">
-              {{i18n "custom_form.form.date_label"}}
-              <span class="required">*</span>
-            </label>
-            <Input
-              @type="date"
-              @value={{this.selectedDate}}
-              {{on "input" this.updateDate}}
-              id="custom-form-date"
-              class="form-control {{if this.errors.date 'error'}}"
-            />
-            {{#if this.errors.date}}
-              <div class="error-message">{{this.errors.date}}</div>
-            {{/if}}
-          </div>
         </form>
       </:body>
 
