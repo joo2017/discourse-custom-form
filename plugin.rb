@@ -11,8 +11,10 @@ enabled_site_setting :custom_form_enabled
 register_asset "stylesheets/custom-form.scss"
 
 after_initialize do
-  # 加载模型和控制器
+  # 强制加载模型
   load File.expand_path('../app/models/custom_form_entry.rb', __FILE__)
+  
+  # 加载控制器
   load File.expand_path('../app/controllers/custom_form_entries_controller.rb', __FILE__)
   
   # 注册路由
