@@ -1,0 +1,9 @@
+plugins:
+  custom_form_enabled:
+    client: true
+    default: true
+    description: "启用自定义表单插件"
+  custom_form_allow_image_upload:
+    client: true
+    default: true
+    description: "允许在表单中上传图片"
