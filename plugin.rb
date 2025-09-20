@@ -11,10 +11,11 @@ enabled_site_setting :custom_form_enabled
 register_asset "stylesheets/custom-form.scss"
 
 after_initialize do
-  # 加载控制器文件
+  # 加载模型和控制器
+  load File.expand_path('../app/models/custom_form_entry.rb', __FILE__)
   load File.expand_path('../app/controllers/custom_form_entries_controller.rb', __FILE__)
   
-  # 注册路由 - 注意：不要使用 namespace，直接使用 resources
+  # 注册路由
   Discourse::Application.routes.append do
     get '/custom_form/entries' => 'custom_form_entries#index'
     post '/custom_form/entries' => 'custom_form_entries#create'
