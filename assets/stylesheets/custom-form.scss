@@ -8,9 +8,61 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: block;
   position: relative;
+  min-height: 80px;
+  
+  // 显示标题
+  &[data-title]::before {
+    content: "📝 " attr(data-title);
+    display: block;
+    font-size: 1.4em;
+    font-weight: bold;
+    color: var(--primary);
+    margin-bottom: 15px;
+    border-bottom: 2px solid var(--primary-300);
+    padding-bottom: 8px;
+  }
+  
+  // 显示日期和描述
+  &[data-date]::after {
+    content: "📅 日期: " attr(data-date);
+    display: block;
+    color: var(--primary-600);
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+  
+  // 当有描述时，同时显示日期和描述
+  &[data-date][data-description]::after {
+    content: "📅 日期: " attr(data-date) "\A📝 描述: " attr(data-description);
+    white-space: pre-line;
+  }
+  
+  // 当有图片时，也显示图片信息
+  &[data-date][data-description][data-image]::after {
+    content: "📅 日期: " attr(data-date) "\A📝 描述: " attr(data-description) "\A🖼️ 图片ID: " attr(data-image);
+    white-space: pre-line;
+  }
+  
+  &[data-date][data-image]:not([data-description])::after {
+    content: "📅 日期: " attr(data-date) "\A🖼️ 图片ID: " attr(data-image);
+    white-space: pre-line;
+  }
+}
+
+// 备用方案：如果上面不工作，使用这个
+.d-wrap.d-wrap-custom-form {
+  background: var(--secondary);
+  border: 2px solid var(--primary-300);
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: block;
+  position: relative;
+  min-height: 80px;
   
   &::before {
-    content: attr(title);
+    content: "📝 " attr(title);
     display: block;
     font-size: 1.4em;
     font-weight: bold;
@@ -21,26 +73,13 @@
   }
   
   &::after {
-    content: "日期: " attr(date) "\A描述: " attr(description);
+    content: "📅 日期: " attr(date) "\A📝 描述: " attr(description);
     white-space: pre-line;
     display: block;
     color: var(--primary-600);
     margin-top: 10px;
     line-height: 1.6;
   }
-  
-  &[image]::after {
-    content: "日期: " attr(date) "\A描述: " attr(description) "\A图片 ID: " attr(image);
-  }
-}
-
-// 当没有描述时的样式
-.d-wrap[data-wrap="custom-form"]:not([description])::after {
-  content: "日期: " attr(date);
-}
-
-.d-wrap[data-wrap="custom-form"]:not([description])[image]::after {
-  content: "日期: " attr(date) "\A图片 ID: " attr(image);
 }
 
 // 模态框表单样式
@@ -189,7 +228,8 @@
 
 // 响应式设计
 @media (max-width: 768px) {
-  .d-wrap[data-wrap="custom-form"] {
+  .d-wrap[data-wrap="custom-form"],
+  .d-wrap.d-wrap-custom-form {
     padding: 15px;
     margin: 15px 0;
     
@@ -214,7 +254,7 @@
       
       .form-control {
         padding: 10px 12px;
-        font-size: 16px; // 防止 iOS 缩放
+        font-size: 16px;
       }
     }
     
@@ -232,7 +272,8 @@
 
 // 暗色主题适配
 @media (prefers-color-scheme: dark) {
-  .d-wrap[data-wrap="custom-form"] {
+  .d-wrap[data-wrap="custom-form"],
+  .d-wrap.d-wrap-custom-form {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
   
