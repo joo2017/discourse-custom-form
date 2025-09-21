@@ -2,8 +2,6 @@ import Component from "@glimmer/component";
 import { tracked } from "@glimmer/tracking";
 import { action } from "@ember/object";
 import { service } from "@ember/service";
-import { ajax } from "discourse/lib/ajax";
-import { popupAjaxError } from "discourse/lib/ajax-error";
 import DModal from "discourse/components/d-modal";
 import DButton from "discourse/components/d-button";
 import DModalCancel from "discourse/components/d-modal-cancel";
@@ -76,73 +74,50 @@ export default class CustomFormModal extends Component {
     this.isSubmitting = true;
 
     try {
-      const formData = {
-        custom_form_entry: {
-          title: this.title,
-          event_date: this.selectedDate,
-          description: this.description,
-          image_upload_id: this.uploadedImage?.id
-        }
-      };
+      // 构建自定义表单标记，将插入到编辑器中
+      let formMarkup = `[custom-form title="${this.title}"`;
+      
+      if (this.selectedDate) {
+        formMarkup += ` date="${this.selectedDate}"`;
+      }
+      
+      if (this.description) {
+        formMarkup += ` description="${this.description}"`;
+      }
+      
+      if (this.uploadedImage) {
+        formMarkup += ` image="${this.uploadedImage.id}"`;
+      }
+      
+      formMarkup += `][/custom-form]
 
-      if (this.args.model.post?.id) {
-        formData.post_id = this.args.model.post.id;
+## ${this.title}
+
+**日期:** ${this.selectedDate}`;
+
+      if (this.description) {
+        formMarkup += `
+**描述:** ${this.description}`;
       }
 
-      console.log("发送请求数据:", formData);
+      if (this.uploadedImage) {
+        formMarkup += `
 
-      const response = await ajax("/custom_form/entries", {
-        type: "POST",
-        data: formData
-      });
-
-      console.log("收到响应:", response);
-
-      if (response.success) {
-        // 在编辑器中插入内容（恢复之前的功能）
-        const toolbarEvent = this.args.model.toolbarEvent;
-        if (toolbarEvent) {
-          let content = `## ${this.title}\n\n`;
-          content += `**日期:** ${this.selectedDate}\n\n`;
-          
-          if (this.description) {
-            content += `**描述:** ${this.description}\n\n`;
-          }
-          
-          if (this.uploadedImage) {
-            content += `![${this.title}](${this.uploadedImage.url})\n\n`;
-          }
-          
-          toolbarEvent.addText(content);
-        }
-        
-        this.dialog.alert(response.message || "表单提交成功！");
-        this.args.closeModal();
-        this.args.model.onEntryCreated?.(response.entry);
-      } else {
-        this.errors = { general: response.error || "提交失败" };
+![${this.title}](${this.uploadedImage.url})`;
       }
+
+      // 在编辑器中插入内容
+      const toolbarEvent = this.args.model.toolbarEvent;
+      if (toolbarEvent) {
+        toolbarEvent.addText(formMarkup);
+      }
+
+      this.dialog.alert("表单已插入编辑器，发布帖子时将自动保存数据！");
+      this.args.closeModal();
 
     } catch (error) {
-      console.error("AJAX 错误:", error);
-      console.error("响应文本:", error.jqXHR?.responseText);
-      
-      let errorMessage = "提交失败";
-      
-      if (error.jqXHR?.responseJSON) {
-        const jsonError = error.jqXHR.responseJSON;
-        if (jsonError.error) {
-          errorMessage = jsonError.error;
-        } else if (jsonError.errors) {
-          errorMessage = Array.isArray(jsonError.errors) ? 
-            jsonError.errors.join(", ") : 
-            jsonError.errors;
-        }
-      } else if (error.jqXHR?.responseText) {
-        errorMessage = `服务器错误 (${error.jqXHR.status}): 请查看服务器日志`;
-      }
-      
-      this.errors = { general: errorMessage };
+      console.error("错误:", error);
+      this.errors = { general: "插入失败，请重试" };
     } finally {
       this.isSubmitting = false;
     }
