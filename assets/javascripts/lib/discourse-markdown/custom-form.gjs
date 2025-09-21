@@ -6,37 +6,41 @@ export function setup(helper) {
   helper.registerPlugin(md => {
     const rule = {
       tag: 'custom-form',
-      before(state, tagInfo) {
-        const token = state.push('custom_form_open', 'div', 1);
-        token.attrSet('class', 'custom-form-container');
-        token.attrSet('data-title', tagInfo.attrs['title'] || '');
-        token.attrSet('data-date', tagInfo.attrs['date'] || '');
-        token.attrSet('data-description', tagInfo.attrs['description'] || '');
-        token.attrSet('data-image', tagInfo.attrs['image'] || '');
-      },
-      after(state) {
-        state.push('custom_form_close', 'div', -1);
+      
+      replace: function(state, tagInfo, content) {
+        const title = tagInfo.attrs.title || '';
+        const date = tagInfo.attrs.date || '';
+        const description = tagInfo.attrs.description || '';
+        const imageId = tagInfo.attrs.image || '';
+        
+        let htmlContent = '<div class="custom-form-container">';
+        
+        if (title) {
+          htmlContent += `<div class="custom-form-title">${title}</div>`;
+        }
+        
+        if (date) {
+          htmlContent += `<div class="custom-form-date"><span class="custom-form-label">日期:</span> ${date}</div>`;
+        }
+        
+        if (description) {
+          htmlContent += `<div class="custom-form-description"><span class="custom-form-label">描述:</span> ${description}</div>`;
+        }
+        
+        if (imageId) {
+          htmlContent += `<div class="custom-form-image"><span class="custom-form-label">图片 ID:</span> ${imageId}</div>`;
+        }
+        
+        htmlContent += '</div>';
+        
+        const token = state.push('html_block', '', 0);
+        token.content = htmlContent;
+        token.map = tagInfo.map;
+        
+        return true;
       }
     };
 
     md.block.bbcode.ruler.push('custom-form', rule);
-  });
-
-  helper.addPreview('custom-form', attrs => {
-    const title = attrs['title'] || '';
-    const date = attrs['date'] || '';
-    const description = attrs['description'] || '';
-    
-    let preview = `<div class="custom-form-preview">`;
-    preview += `<h3>${title}</h3>`;
-    if (date) {
-      preview += `<p><strong>日期:</strong> ${date}</p>`;
-    }
-    if (description) {
-      preview += `<p><strong>描述:</strong> ${description}</p>`;
-    }
-    preview += `</div>`;
-    
-    return preview;
   });
 }
