@@ -1,13 +1,17 @@
-// 自定义表单容器样式
-.custom-form-container {
+// 使用 Discourse 通用包装器的样式
+.d-wrap[data-wrap="custom-form"] {
   background: var(--secondary);
   border: 2px solid var(--primary-300);
   border-radius: 8px;
   padding: 20px;
   margin: 20px 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: block;
+  position: relative;
   
-  .custom-form-title {
+  &::before {
+    content: attr(title);
+    display: block;
     font-size: 1.4em;
     font-weight: bold;
     color: var(--primary);
@@ -16,49 +20,35 @@
     padding-bottom: 8px;
   }
   
-  .custom-form-date {
-    font-size: 1.1em;
+  &::after {
+    content: "日期: " attr(date) "\A描述: " attr(description);
+    white-space: pre-line;
+    display: block;
     color: var(--primary-600);
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    
-    &::before {
-      content: "📅";
-      margin-right: 8px;
-    }
-  }
-  
-  .custom-form-description {
-    font-size: 1em;
-    color: var(--primary-700);
+    margin-top: 10px;
     line-height: 1.6;
-    margin-bottom: 12px;
-    
-    &::before {
-      content: "📝";
-      margin-right: 8px;
-    }
   }
   
-  .custom-form-image {
-    font-size: 1em;
-    color: var(--primary-600);
-    
-    &::before {
-      content: "🖼️";
-      margin-right: 8px;
-    }
+  &[image]::after {
+    content: "日期: " attr(date) "\A描述: " attr(description) "\A图片 ID: " attr(image);
   }
-  
-  .custom-form-label {
-    font-weight: bold;
-    margin-right: 5px;
-  }
+}
+
+// 当没有描述时的样式
+.d-wrap[data-wrap="custom-form"]:not([description])::after {
+  content: "日期: " attr(date);
+}
+
+.d-wrap[data-wrap="custom-form"]:not([description])[image]::after {
+  content: "日期: " attr(date) "\A图片 ID: " attr(image);
 }
 
 // 模态框表单样式
 .custom-form-modal {
+  .modal-body {
+    padding: 20px;
+  }
+  
   .form-group {
     margin-bottom: 20px;
     
@@ -67,10 +57,12 @@
       margin-bottom: 8px;
       font-weight: bold;
       color: var(--primary);
+      font-size: 1em;
       
       .required {
         color: var(--danger);
         margin-left: 3px;
+        font-size: 1.1em;
       }
     }
     
@@ -82,7 +74,8 @@
       font-size: 1em;
       background: var(--secondary);
       color: var(--primary);
-      transition: border-color 0.2s ease;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      box-sizing: border-box;
       
       &:focus {
         outline: none;
@@ -90,8 +83,13 @@
         box-shadow: 0 0 0 3px rgba(var(--tertiary-rgb), 0.1);
       }
       
+      &:hover {
+        border-color: var(--primary-400);
+      }
+      
       &.error {
         border-color: var(--danger);
+        background-color: var(--danger-low);
         
         &:focus {
           box-shadow: 0 0 0 3px rgba(var(--danger-rgb), 0.1);
@@ -102,6 +100,8 @@
     textarea.form-control {
       resize: vertical;
       min-height: 80px;
+      font-family: var(--font-family);
+      line-height: 1.4;
     }
     
     .error-message {
@@ -109,12 +109,16 @@
       font-size: 0.9em;
       margin-top: 5px;
       font-weight: 500;
+      display: block;
     }
   }
   
   .uploaded-image-preview {
     margin-top: 15px;
     text-align: center;
+    padding: 10px;
+    background: var(--primary-very-low);
+    border-radius: 6px;
     
     .preview-image {
       max-width: 300px;
@@ -122,6 +126,8 @@
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
       border: 2px solid var(--primary-300);
+      display: block;
+      margin: 0 auto;
     }
   }
   
@@ -138,10 +144,35 @@
     }
   }
   
+  .modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid var(--primary-300);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  
   .custom-form-submit {
     .loading-icon {
       margin-right: 8px;
       animation: spin 1s linear infinite;
+    }
+  }
+}
+
+// 图片上传器样式
+.image-uploader {
+  .uppy-FileInput-container {
+    border: 2px dashed var(--primary-300);
+    border-radius: 6px;
+    padding: 20px;
+    text-align: center;
+    background: var(--primary-very-low);
+    transition: border-color 0.2s ease;
+    
+    &:hover {
+      border-color: var(--tertiary);
+      background: var(--tertiary-low);
     }
   }
 }
@@ -158,28 +189,56 @@
 
 // 响应式设计
 @media (max-width: 768px) {
-  .custom-form-container {
+  .d-wrap[data-wrap="custom-form"] {
     padding: 15px;
     margin: 15px 0;
     
-    .custom-form-title {
+    &::before {
       font-size: 1.2em;
+      margin-bottom: 10px;
     }
     
-    .custom-form-date,
-    .custom-form-description,
-    .custom-form-image {
+    &::after {
       font-size: 0.9em;
+      margin-top: 8px;
     }
   }
   
   .custom-form-modal {
+    .modal-body {
+      padding: 15px;
+    }
+    
     .form-group {
       margin-bottom: 15px;
       
       .form-control {
         padding: 10px 12px;
+        font-size: 16px; // 防止 iOS 缩放
       }
+    }
+    
+    .modal-footer {
+      padding: 10px 15px;
+      flex-direction: column;
+      
+      .btn {
+        width: 100%;
+        margin-bottom: 5px;
+      }
+    }
+  }
+}
+
+// 暗色主题适配
+@media (prefers-color-scheme: dark) {
+  .d-wrap[data-wrap="custom-form"] {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  .custom-form-modal {
+    .uploaded-image-preview .preview-image {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     }
   }
 }
