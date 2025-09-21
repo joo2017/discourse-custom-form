@@ -74,7 +74,7 @@ export default class CustomFormModal extends Component {
     this.isSubmitting = true;
 
     try {
-      // 构建自定义表单标记，将插入到编辑器中
+      // 只插入 BBCode 标记，让 markdown 处理器处理渲染
       let formMarkup = `[custom-form title="${this.title}"`;
       
       if (this.selectedDate) {
@@ -89,24 +89,9 @@ export default class CustomFormModal extends Component {
         formMarkup += ` image="${this.uploadedImage.id}"`;
       }
       
-      formMarkup += `][/custom-form]
+      formMarkup += `][/custom-form]`;
 
-## ${this.title}
-
-**日期:** ${this.selectedDate}`;
-
-      if (this.description) {
-        formMarkup += `
-**描述:** ${this.description}`;
-      }
-
-      if (this.uploadedImage) {
-        formMarkup += `
-
-![${this.title}](${this.uploadedImage.url})`;
-      }
-
-      // 在编辑器中插入内容
+      // 在编辑器中插入标记
       const toolbarEvent = this.args.model.toolbarEvent;
       if (toolbarEvent) {
         toolbarEvent.addText(formMarkup);
