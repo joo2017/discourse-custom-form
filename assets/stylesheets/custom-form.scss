@@ -121,3 +121,34 @@
     }
   }
 }
+
+// assets/stylesheets/custom-form.scss
+.custom-form-container {
+  background: var(--secondary);
+  border: 1px solid var(--primary-300);
+  border-radius: 8px;
+  padding: 15px;
+  margin: 15px 0;
+  
+  &::before {
+    content: "📝 " attr(data-title);
+    display: block;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  &::after {
+    content: "📅 " attr(data-date);
+    display: block;
+    color: var(--primary-600);
+    margin-top: 5px;
+  }
+}
+
+.custom-form-preview {
+  background: var(--highlight-bg);
+  border-left: 4px solid var(--tertiary);
+  padding: 10px 15px;
+  margin: 10px 0;
+}
