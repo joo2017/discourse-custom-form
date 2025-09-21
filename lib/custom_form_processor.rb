@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class CustomFormProcessor
-  # 修正后的正则表达式
   CUSTOM_FORM_REGEX = /\[wrap=custom-form(?:\s+title="([^"]*)")?(?:\s+date="([^"]*)")?(?:\s+description="([^"]*)")?(?:\s+image="([^"]*)")?\]\[\/wrap\]/
 
   def self.update(post)
