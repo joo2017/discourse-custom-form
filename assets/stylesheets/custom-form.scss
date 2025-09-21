@@ -1,6 +1,6 @@
-// 针对空的 span 元素的样式
+// 使用 Discourse 通用包装器的样式
 .d-wrap[data-wrap="custom-form"] {
-  display: inline-block;
+  display: block !important;
   width: 100%;
   min-height: 120px;
   background: var(--secondary);
@@ -14,7 +14,7 @@
   
   // 强制显示标题
   &::before {
-    content: "📝 " attr(data-title);
+    content: attr(data-title);
     display: block;
     font-size: 1.4em;
     font-weight: bold;
@@ -27,7 +27,7 @@
   
   // 强制显示日期
   &::after {
-    content: "📅 日期: " attr(data-date);
+    content: "日期: " attr(data-date);
     display: block;
     color: var(--primary-600);
     margin-top: 10px;
@@ -37,19 +37,19 @@
   
   // 当有描述时，显示描述
   &[data-description]:not([data-description=""])::after {
-    content: "📅 日期: " attr(data-date) "\A📝 描述: " attr(data-description);
+    content: "日期: " attr(data-date) "\A描述: " attr(data-description);
     white-space: pre-line;
   }
   
   // 当有图片时，显示图片信息
   &[data-image]:not([data-image=""])::after {
-    content: "📅 日期: " attr(data-date) "\A🖼️ 图片ID: " attr(data-image);
+    content: "日期: " attr(data-date) "\A图片ID: " attr(data-image);
     white-space: pre-line;
   }
   
   // 当有描述和图片时
   &[data-description]:not([data-description=""])[data-image]:not([data-image=""])::after {
-    content: "📅 日期: " attr(data-date) "\A📝 描述: " attr(data-description) "\A🖼️ 图片ID: " attr(data-image);
+    content: "日期: " attr(data-date) "\A描述: " attr(data-description) "\A图片ID: " attr(data-image);
     white-space: pre-line;
   }
 }
