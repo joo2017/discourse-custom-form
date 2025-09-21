@@ -1,17 +1,19 @@
-// 使用 Discourse 通用包装器的样式
+// 针对空的 span 元素的样式
 .d-wrap[data-wrap="custom-form"] {
+  display: inline-block;
+  width: 100%;
+  min-height: 120px;
   background: var(--secondary);
   border: 2px solid var(--primary-300);
   border-radius: 8px;
   padding: 20px;
   margin: 20px 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  display: block;
   position: relative;
-  min-height: 80px;
+  box-sizing: border-box;
   
-  // 显示标题
-  &[data-title]::before {
+  // 强制显示标题
+  &::before {
     content: "📝 " attr(data-title);
     display: block;
     font-size: 1.4em;
@@ -20,65 +22,45 @@
     margin-bottom: 15px;
     border-bottom: 2px solid var(--primary-300);
     padding-bottom: 8px;
+    width: 100%;
   }
   
-  // 显示日期和描述
-  &[data-date]::after {
+  // 强制显示日期
+  &::after {
     content: "📅 日期: " attr(data-date);
     display: block;
     color: var(--primary-600);
     margin-top: 10px;
     line-height: 1.6;
+    width: 100%;
   }
   
-  // 当有描述时，同时显示日期和描述
-  &[data-date][data-description]::after {
+  // 当有描述时，显示描述
+  &[data-description]:not([data-description=""])::after {
     content: "📅 日期: " attr(data-date) "\A📝 描述: " attr(data-description);
     white-space: pre-line;
   }
   
-  // 当有图片时，也显示图片信息
-  &[data-date][data-description][data-image]::after {
-    content: "📅 日期: " attr(data-date) "\A📝 描述: " attr(data-description) "\A🖼️ 图片ID: " attr(data-image);
+  // 当有图片时，显示图片信息
+  &[data-image]:not([data-image=""])::after {
+    content: "📅 日期: " attr(data-date) "\A🖼️ 图片ID: " attr(data-image);
     white-space: pre-line;
   }
   
-  &[data-date][data-image]:not([data-description])::after {
-    content: "📅 日期: " attr(data-date) "\A🖼️ 图片ID: " attr(data-image);
+  // 当有描述和图片时
+  &[data-description]:not([data-description=""])[data-image]:not([data-image=""])::after {
+    content: "📅 日期: " attr(data-date) "\A📝 描述: " attr(data-description) "\A🖼️ 图片ID: " attr(data-image);
     white-space: pre-line;
   }
 }
 
-// 备用方案：如果上面不工作，使用这个
-.d-wrap.d-wrap-custom-form {
-  background: var(--secondary);
-  border: 2px solid var(--primary-300);
-  border-radius: 8px;
-  padding: 20px;
-  margin: 20px 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  display: block;
-  position: relative;
-  min-height: 80px;
+// 确保即使是空元素也能显示
+span.d-wrap[data-wrap="custom-form"] {
+  display: block !important;
   
-  &::before {
-    content: "📝 " attr(title);
-    display: block;
-    font-size: 1.4em;
-    font-weight: bold;
-    color: var(--primary);
-    margin-bottom: 15px;
-    border-bottom: 2px solid var(--primary-300);
-    padding-bottom: 8px;
-  }
-  
-  &::after {
-    content: "📅 日期: " attr(date) "\A📝 描述: " attr(description);
-    white-space: pre-line;
-    display: block;
-    color: var(--primary-600);
-    margin-top: 10px;
-    line-height: 1.6;
+  &:empty::before,
+  &:empty::after {
+    display: block !important;
   }
 }
 
@@ -228,10 +210,10 @@
 
 // 响应式设计
 @media (max-width: 768px) {
-  .d-wrap[data-wrap="custom-form"],
-  .d-wrap.d-wrap-custom-form {
+  .d-wrap[data-wrap="custom-form"] {
     padding: 15px;
     margin: 15px 0;
+    min-height: 100px;
     
     &::before {
       font-size: 1.2em;
@@ -272,8 +254,7 @@
 
 // 暗色主题适配
 @media (prefers-color-scheme: dark) {
-  .d-wrap[data-wrap="custom-form"],
-  .d-wrap.d-wrap-custom-form {
+  .d-wrap[data-wrap="custom-form"] {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
   
