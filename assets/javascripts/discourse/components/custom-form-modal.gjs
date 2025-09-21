@@ -89,22 +89,60 @@ export default class CustomFormModal extends Component {
         formData.post_id = this.args.model.post.id;
       }
 
+      console.log("发送请求数据:", formData);
+
       const response = await ajax("/custom_form/entries", {
         type: "POST",
         data: formData
       });
 
-      this.dialog.alert(I18n.t("custom_form.success_message"));
-      this.args.closeModal();
+      console.log("收到响应:", response);
 
-      this.args.model.onEntryCreated?.(response);
+      if (response.success) {
+        // 在编辑器中插入内容（恢复之前的功能）
+        const toolbarEvent = this.args.model.toolbarEvent;
+        if (toolbarEvent) {
+          let content = `## ${this.title}\n\n`;
+          content += `**日期:** ${this.selectedDate}\n\n`;
+          
+          if (this.description) {
+            content += `**描述:** ${this.description}\n\n`;
+          }
+          
+          if (this.uploadedImage) {
+            content += `![${this.title}](${this.uploadedImage.url})\n\n`;
+          }
+          
+          toolbarEvent.addText(content);
+        }
+        
+        this.dialog.alert(response.message || "表单提交成功！");
+        this.args.closeModal();
+        this.args.model.onEntryCreated?.(response.entry);
+      } else {
+        this.errors = { general: response.error || "提交失败" };
+      }
 
     } catch (error) {
-      if (error.jqXHR?.responseJSON?.errors) {
-        this.errors = { general: error.jqXHR.responseJSON.errors.join(", ") };
-      } else {
-        popupAjaxError(error);
+      console.error("AJAX 错误:", error);
+      console.error("响应文本:", error.jqXHR?.responseText);
+      
+      let errorMessage = "提交失败";
+      
+      if (error.jqXHR?.responseJSON) {
+        const jsonError = error.jqXHR.responseJSON;
+        if (jsonError.error) {
+          errorMessage = jsonError.error;
+        } else if (jsonError.errors) {
+          errorMessage = Array.isArray(jsonError.errors) ? 
+            jsonError.errors.join(", ") : 
+            jsonError.errors;
+        }
+      } else if (error.jqXHR?.responseText) {
+        errorMessage = `服务器错误 (${error.jqXHR.status}): 请查看服务器日志`;
       }
+      
+      this.errors = { general: errorMessage };
     } finally {
       this.isSubmitting = false;
     }
