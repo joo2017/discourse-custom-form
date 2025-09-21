@@ -74,8 +74,8 @@ export default class CustomFormModal extends Component {
     this.isSubmitting = true;
 
     try {
-      // 只插入 BBCode 标记，让 markdown 处理器处理渲染
-      let formMarkup = `[custom-form title="${this.title}"`;
+      // 使用 Discourse 的通用 wrap 语法
+      let formMarkup = `[wrap=custom-form title="${this.title}"`;
       
       if (this.selectedDate) {
         formMarkup += ` date="${this.selectedDate}"`;
@@ -89,7 +89,7 @@ export default class CustomFormModal extends Component {
         formMarkup += ` image="${this.uploadedImage.id}"`;
       }
       
-      formMarkup += `][/custom-form]`;
+      formMarkup += `][/wrap]`;
 
       // 在编辑器中插入标记
       const toolbarEvent = this.args.model.toolbarEvent;
