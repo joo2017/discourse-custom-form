@@ -65,4 +65,9 @@ after_initialize do
   on(:post_recovered) do |post, _, _|
     CustomFormProcessor.update(post)
   end
+
+  # 在帖子更新时也处理
+  on(:post_edited) do |post, topic_changed, _|
+    CustomFormProcessor.update(post)
+  end
 end
