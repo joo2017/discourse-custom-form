@@ -5,47 +5,117 @@ class CustomFormEntriesController < ApplicationController
   before_action :find_entry, only: [:show, :destroy]
 
   def index
-    entries = CustomFormEntry.includes(:user, :post, :image_upload)
-                             .by_date
-                             .limit(50)
-    
-    render json: {
-      entries: entries.map { |entry| serialize_entry(entry) }
-    }
+    begin
+      entries = CustomFormEntry.includes(:user, :image_upload)
+                               .order(:event_date)
+                               .limit(50)
+      
+      render json: {
+        success: true,
+        entries: entries.map { |entry| serialize_entry(entry) }
+      }
+    rescue => e
+      Rails.logger.error "CustomFormEntriesController#index error: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+      render json: { 
+        success: false, 
+        error: e.message 
+      }, status: 500
+    end
   end
 
   def create
-    # 从参数中提取 post_id
-    post_id = params[:post_id]
-    post = nil
-    
-    if post_id.present?
-      post = Post.find_by(id: post_id)
-    end
-    
-    entry_params_hash = entry_params
-    entry = CustomFormEntry.new(entry_params_hash.merge(user: current_user))
-    entry.post = post if post
-    
-    if entry.save
-      render json: serialize_entry(entry)
-    else
+    begin
+      Rails.logger.info "CustomFormEntriesController#create called"
+      Rails.logger.info "Params: #{params.inspect}"
+      Rails.logger.info "Current user: #{current_user.id}"
+      
+      entry_params_hash = entry_params
+      Rails.logger.info "Entry params: #{entry_params_hash.inspect}"
+      
+      entry = CustomFormEntry.new(entry_params_hash.merge(user: current_user))
+      
+      if params[:post_id].present?
+        post = Post.find_by(id: params[:post_id])
+        entry.post = post if post
+      end
+      
+      if entry.save
+        Rails.logger.info "Entry saved successfully: #{entry.id}"
+        render json: {
+          success: true,
+          message: "表单提交成功",
+          entry: serialize_entry(entry)
+        }
+      else
+        Rails.logger.error "Entry validation failed: #{entry.errors.full_messages}"
+        render json: { 
+          success: false,
+          errors: entry.errors.full_messages 
+        }, status: 422
+      end
+      
+    rescue ActiveRecord::RecordNotFound => e
+      Rails.logger.error "Record not found: #{e.message}"
       render json: { 
-        errors: entry.errors.full_messages,
-        success: false 
-      }, status: 422
+        success: false, 
+        error: "记录未找到: #{e.message}" 
+      }, status: 404
+      
+    rescue ActiveRecord::StatementInvalid => e
+      Rails.logger.error "Database error: #{e.message}"
+      render json: { 
+        success: false, 
+        error: "数据库错误，请检查表结构是否正确" 
+      }, status: 500
+      
+    rescue => e
+      Rails.logger.error "CustomFormEntriesController#create error: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+      render json: { 
+        success: false, 
+        error: "服务器错误: #{e.message}" 
+      }, status: 500
     end
   end
 
   def show
-    render json: serialize_entry(@entry)
+    begin
+      render json: {
+        success: true,
+        entry: serialize_entry(@entry)
+      }
+    rescue => e
+      Rails.logger.error "CustomFormEntriesController#show error: #{e.message}"
+      render json: { 
+        success: false, 
+        error: e.message 
+      }, status: 500
+    end
   end
 
   def destroy
-    raise Discourse::InvalidAccess unless can_delete?
-    
-    @entry.destroy!
-    render json: { success: true }
+    begin
+      unless can_delete?
+        render json: { 
+          success: false, 
+          error: "权限不足" 
+        }, status: 403
+        return
+      end
+      
+      @entry.destroy!
+      render json: { 
+        success: true, 
+        message: "删除成功" 
+      }
+    rescue => e
+      Rails.logger.error "CustomFormEntriesController#destroy error: #{e.message}"
+      render json: { 
+        success: false, 
+        error: e.message 
+      }, status: 500
+    end
   end
 
   private
